@@ -123,3 +123,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <label for="weighted">Weighted</label><br>
         <input type="checkbox" id="wheel_roller" name="equipment[]" value="Wheel Roller">
         <label for="wheel_roller">Wheel Roller</label><br>
+
+        <label for="gym_access">Gym Access:</label><br>
+        <input type="radio" id="yes" name="gym_access" value="Yes">
+        <label for="yes">Yes</label><br>
+        <input type="radio" id="no" name="gym_access" value="No">
+        <label for="no">No</label><br><br>
+
+        <label for="exercise_goals">Exercise Goals:</label><br>
+        <textarea id="exercise_goals" name="exercise_goals" rows="4" cols="50" required></textarea><br><br>
+
+</div>
+    <?php endforeach; ?>
+</body>
+</html>
