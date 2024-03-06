@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Signup Confirmation</title>
-    <link rel="stylesheet" href="styles.css"> <!-- You can link your CSS file here -->
+    <link rel="stylesheet" href="styles.css"> 
 </head>
 <body>
     <h1>Thank You for Signing Up!</h1>
