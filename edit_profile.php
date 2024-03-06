@@ -132,7 +132,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <label for="exercise_goals">Exercise Goals:</label><br>
         <textarea id="exercise_goals" name="exercise_goals" rows="4" cols="50" required></textarea><br><br>
-
+        
+        <input type="submit" value="Update Profile">
+        </form>
 </div>
     <?php endforeach; ?>
 </body>
