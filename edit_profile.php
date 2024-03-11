@@ -39,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $_SESSION['time_available'] = $_POST['time_available'];
     $_SESSION['equipment'] = isset($_POST['equipment']) ? $_POST['equipment'] : [];
     $_SESSION['gym_access'] = $_POST['gym_access'];
-    $_SESSION['exercise_goals'] = $_POST['exercise_goals'];
+    $_SESSION['exercise_goals'] = isset($_POST['exercise_goals']) ? $_POST['exercise_goals'] : [];
 
     // Redirect to profile page
     header("Location: profile.php");
@@ -131,8 +131,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <label for="no">No</label><br><br>
 
         <label for="exercise_goals">Exercise Goals:</label><br>
-        <textarea id="exercise_goals" name="exercise_goals" rows="4" cols="50" required></textarea><br><br>
-        
+        <input type="checkbox" id="lose_weight" name="exercise_goals[]" value="Lose Weight" <?php if(in_array("Lose Weight", $_SESSION['exercise_goals'])) echo "checked"; ?>>
+        <label for="lose_weight">Lose Weight</label><br>
+        <input type="checkbox" id="build_muscle" name="exercise_goals[]" value="Build Muscle" <?php if(in_array("Build Muscle", $_SESSION['exercise_goals'])) echo "checked"; ?>>
+        <label for="build_muscle">Build Muscle</label><br>
+        <input type="checkbox" id="increase_flexibility" name="exercise_goals[]" value="Increase Flexibility" <?php if(in_array("Increase Flexibility", $_SESSION['exercise_goals'])) echo "checked"; ?>>
+        <label for="increase_flexibility">Increase Flexibility</label><br><br>
+
         <input type="submit" value="Update Profile">
         </form>
 </div>
