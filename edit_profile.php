@@ -53,6 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Edit Profile</title>
 </head>
 <body>
+    <?php include 'navigation.php'; ?>
     <h2>Edit Profile</h2>
     <form action="edit_profile.php" method="post">
         <label for="height_feet">Height:</label>
