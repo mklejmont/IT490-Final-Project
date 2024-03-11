@@ -8,12 +8,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $time_available = $_POST['time_available'];
     $equipment = isset($_POST['equipment']) ? implode(', ', $_POST['equipment']) : '';
     $gym_access = $_POST['gym_access'];
-    $exercise_goals = $_POST['exercise_goals'];
+    $exercise_goals = isset($_POST['exercise_goals']) ? implode(', ', $_POST['exercise_goals']) : '';
 
     // Convert height to inches
     $height_inches += $height_feet * 12;
 
-    
+    // Display the retrieved data
     echo "Height: $height_feet feet $height_inches inches<br>";
     echo "Weight: $weight lbs<br>";
     echo "Time Available for Exercise: $time_available minutes per day<br>";
