@@ -65,7 +65,7 @@ function generateWorkoutRoutine($userGoal) {
 
             // Filter out cardio and stretch exercises
             $filteredExercises = array_filter($strengthExercises, function($exercise) {
-                return stripos($exercise['name'], 'stretch') === false && $exercise['category'] !== 'Cardio';
+                return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
             });
 
             return [
@@ -79,7 +79,7 @@ function generateWorkoutRoutine($userGoal) {
 
             // Filter out cardio and stretch exercises
             $filteredExercises = array_filter($strengthExercises, function($exercise) {
-                return stripos($exercise['name'], 'stretch') === false && $exercise['category'] !== 'Cardio';
+                return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
             });
 
             return [
@@ -90,15 +90,18 @@ function generateWorkoutRoutine($userGoal) {
         case 'Improve Mobility':
             $cardioExercises = fetchExercisesFromAPI('/exercises/bodyPart/cardio');
             $strengthExercises = fetchExercisesFromAPI('/exercises');
-            $stretchExercises = fetchExercisesFromAPI('/exercises/name/stretch');
+            $randomStretchExercises = fetchExercisesFromAPI('/exercises/name/stretch');
 
             // Filter out cardio and stretch exercises from strength exercises
             $filteredStrengthExercises = array_filter($strengthExercises, function($exercise) {
-                return stripos($exercise['name'], 'stretch') === false && $exercise['category'] !== 'Cardio';
+                return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
             });
 
-            // Select a random 15-minute stretch exercise
-            $randomStretchExercises = array_rand($stretchExercises, min(3, count($stretchExercises)));
+            // Shuffle the array to get random exercises
+            shuffle($randomStretchExercises);
+
+            // Limit to a maximum of 3 exercises
+            $randomStretchExercises = array_slice($randomStretchExercises, 0, min(3, count($randomStretchExercises)));
 
             return [
                 'Cardio workouts' => $cardioExercises,
