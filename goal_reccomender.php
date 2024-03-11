@@ -127,6 +127,7 @@ $workoutRoutine = generateWorkoutRoutine($userGoal);
     <title>Recommended Workout Routine</title>
 </head>
 <body>
+    <?php include 'navigation.php'; ?>
     <h1>Recommended Workout Routine</h1>
     <p><strong>Goal:</strong> <?php echo $userGoal; ?></p>
     <p><strong>Recommended Routine:</strong></p>
