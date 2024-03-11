@@ -2,15 +2,9 @@
 <?php 
 	include_once("dbutils.php");
 	if (key_exists("password", $_POST) && key_exists("username", $_POST)) {
-	$sql = "SELECT user_id, username, pwd_hash from `accounts` WHERE username = :x;";
-	$userval = $db->prepare($sql); 
-	$userval->bindValue("x", sanitize($_POST['username']), PDO::PARAM_STR); 
-	$userval->execute();
-	$userval = $userval->fetch();
-	
-	if ($userval != false && password_verify(sanitize($_POST["password"]), $userval["pwd_hash"])) {
+	if (doLogin($_POST['username'], $_POST['password'])) {
 		$_SESSION["loggedIn"] = true;
-		$_SESSION["user"] = $userval['username'];
+		$_SESSION["user"] = $_POST['username'];
 	} else echo "Incorrect Password, try again.";
 }
 
