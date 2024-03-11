@@ -2,6 +2,7 @@
 session_start();
 include_once("dbutils.php");
 
+// Check if the user is logged in
 if (!isset($_SESSION["loggedIn"])) {
     header("Location: login.php");
     exit;
@@ -16,14 +17,21 @@ $stmt->bindValue(":username", $user);
 $stmt->execute();
 $userProfile = $stmt->fetch(PDO::FETCH_ASSOC);
 
+// Check if the user profile exists
+if (!$userProfile) {
+    // Handle the case when the user profile doesn't exist
+    // You can redirect the user to a page to create their profile or show an error message
+    exit("User profile not found. Please create your profile.");
+}
+
 // Get user's goal from the profile
 $userGoal = $userProfile['exercise_goals'];
 
 // Function to fetch exercise data from ExerciseDB API
-function fetchExercisesFromAPI($category) {
+function fetchExercisesFromAPI($endpoint) {
     $curl = curl_init();
 
-    $url = "https://exercise-database.p.rapidapi.com/exercises?category=" . urlencode($category);
+    $url = "https://exercise-database.p.rapidapi.com" . $endpoint;
 
     curl_setopt_array($curl, [
         CURLOPT_URL => $url,
@@ -50,58 +58,58 @@ function fetchExercisesFromAPI($category) {
 
 // Function to generate workout routine based on user goal
 function generateWorkoutRoutine($userGoal) {
-    $routine = '';
-
     switch ($userGoal) {
         case 'Lose Weight':
-            $cardioExercises = fetchExercisesFromAPI('cardio');
-            $strengthExercises = fetchExercisesFromAPI('strength');
-            $routine .= "Cardio workouts:\n";
-            foreach ($cardioExercises as $exercise) {
-                $routine .= "- " . $exercise['name'] . "\n";
-            }
-            $routine .= "\nStrength training workouts:\n";
-            foreach ($strengthExercises as $exercise) {
-                $routine .= "- " . $exercise['name'] . "\n";
-            }
-            break;
-        case 'Build Muscle':
-            $allExercises = fetchExercisesFromAPI('strength');
-            $strengthExercises = [];
-            foreach ($allExercises as $exercise) {
-                // Filter out exercises labeled as cardio and those containing "stretch" in their names
-                if (strpos(strtolower($exercise['name']), 'stretch') === false && $exercise['category'] !== 'Cardio') {
-                    $strengthExercises[] = $exercise;
-                }
-            }
-            $routine .= "Strength training workouts:\n";
-            foreach ($strengthExercises as $exercise) {
-                $routine .= "- " . $exercise['name'] . "\n";
-            }
-            break;
-        case 'Improve Mobility':
-            $cardioExercises = fetchExercisesFromAPI('cardio');
-            $strengthExercises = fetchExercisesFromAPI('strength');
-            $stretchExercises = fetchExercisesFromAPI('stretch');
-            $routine .= "Cardio workouts:\n";
-            foreach ($cardioExercises as $exercise) {
-                $routine .= "- " . $exercise['name'] . "\n";
-            }
-            $routine .= "\nStrength training workouts:\n";
-            foreach ($strengthExercises as $exercise) {
-                $routine .= "- " . $exercise['name'] . "\n";
-            }
-            $routine .= "\nRandom 15-minute stretch:\n";
-            shuffle($stretchExercises);
-            for ($i = 0; $i < min(3, count($stretchExercises)); $i++) {
-                $routine .= "- " . $stretchExercises[$i]['name'] . "\n";
-            }
-            break;
-        default:
-            $routine = "No specific workout routine recommended.";
-    }
+            $cardioExercises = fetchExercisesFromAPI('/exercises/bodyPart/cardio');
+            $strengthExercises = fetchExercisesFromAPI('/exercises');
 
-    return $routine;
+            // Filter out cardio and stretch exercises
+            $filteredExercises = array_filter($strengthExercises, function($exercise) {
+                return stripos($exercise['name'], 'stretch') === false && $exercise['category'] !== 'Cardio';
+            });
+
+            return [
+                'Cardio workouts' => $cardioExercises,
+                'Strength training workouts' => $filteredExercises
+            ];
+            break;
+
+        case 'Build Muscle':
+            $strengthExercises = fetchExercisesFromAPI('/exercises');
+
+            // Filter out cardio and stretch exercises
+            $filteredExercises = array_filter($strengthExercises, function($exercise) {
+                return stripos($exercise['name'], 'stretch') === false && $exercise['category'] !== 'Cardio';
+            });
+
+            return [
+                'Strength training workouts' => $filteredExercises
+            ];
+            break;
+
+        case 'Improve Mobility':
+            $cardioExercises = fetchExercisesFromAPI('/exercises/bodyPart/cardio');
+            $strengthExercises = fetchExercisesFromAPI('/exercises');
+            $stretchExercises = fetchExercisesFromAPI('/exercises/name/stretch');
+
+            // Filter out cardio and stretch exercises from strength exercises
+            $filteredStrengthExercises = array_filter($strengthExercises, function($exercise) {
+                return stripos($exercise['name'], 'stretch') === false && $exercise['category'] !== 'Cardio';
+            });
+
+            // Select a random 15-minute stretch exercise
+            $randomStretchExercises = array_rand($stretchExercises, min(3, count($stretchExercises)));
+
+            return [
+                'Cardio workouts' => $cardioExercises,
+                'Strength training workouts' => $filteredStrengthExercises,
+                'Random 15-minute stretch' => $randomStretchExercises
+            ];
+            break;
+
+        default:
+            return "No specific workout routine recommended.";
+    }
 }
 
 // Generate workout routine based on user's goal
@@ -119,7 +127,16 @@ $workoutRoutine = generateWorkoutRoutine($userGoal);
     <h1>Recommended Workout Routine</h1>
     <p><strong>Goal:</strong> <?php echo $userGoal; ?></p>
     <p><strong>Recommended Routine:</strong></p>
-    <pre><?php echo $workoutRoutine; ?></pre>
+    <ul>
+    <?php foreach ($workoutRoutine as $category => $exercises): ?>
+        <li><strong><?php echo $category; ?>:</strong></li>
+        <ul>
+            <?php foreach ($exercises as $exercise): ?>
+                <li><?php echo $exercise['name']; ?></li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endforeach; ?>
+    </ul>
     <p><a href="customize_workout.php">Customize Your Workout Routine</a></p>
 </body>
 </html>
