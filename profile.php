@@ -8,8 +8,7 @@ if (!isset($_SESSION["loggedIn"]) || $_SESSION["loggedIn"] !== true) {
 }
 
 // Include database connection
-// Replace 'include_database.php' with the file containing your database connection code
-include_once("include_database.php");
+include_once("dbutils.php");
 
 // Retrieve user's profile information from the database
 $user_id = $_SESSION["user_id"]; // Assuming you have stored user's ID in the session
