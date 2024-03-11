@@ -1,4 +1,9 @@
 <?php
+
+ini_set('display_errors', 1); 
+ini_set('display_startup_errors', 1); 
+error_reporting(E_ALL);
+
 // Step 1: Fetch users profile data from the database
 session_start();
 include_once("dbutils.php");
