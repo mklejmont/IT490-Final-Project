@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles.css"> 
 </head>
 <body>
+    <?php include 'navigation.php'; ?>
     <h1>Signup for Push Notifications</h1>
     <form action="process_signup.php" method="POST">
         <label for="email">Email:</label>
