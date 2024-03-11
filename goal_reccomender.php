@@ -141,6 +141,5 @@ $workoutRoutine = generateWorkoutRoutine($userGoal);
         </ul>
     <?php endforeach; ?>
     </ul>
-    <p><a href="customize_workout.php">Customize Your Workout Routine</a></p>
 </body>
 </html>
