@@ -82,7 +82,12 @@
         <label for="no">No</label><br><br>
 
         <label for="exercise_goals">Exercise Goals:</label><br>
-        <textarea id="exercise_goals" name="exercise_goals" rows="4" cols="50" required></textarea><br><br>
+        <input type="checkbox" id="lose_weight" name="exercise_goals[]" value="Lose Weight">
+        <label for="lose_weight">Lose Weight</label><br>
+        <input type="checkbox" id="build_muscle" name="exercise_goals[]" value="Build Muscle">
+        <label for="build_muscle">Build Muscle</label><br>
+        <input type="checkbox" id="increase_flexibility" name="exercise_goals[]" value="Increase Flexibility">
+        <label for="increase_flexibility">Increase Flexibility</label><br><br>
 
         <input type="submit" value="Submit">
     </form>
