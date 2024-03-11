@@ -36,7 +36,7 @@ function fetchExercisesFromAPI($category) {
         CURLOPT_CUSTOMREQUEST => "GET",
         CURLOPT_HTTPHEADER => [
             "x-rapidapi-host: exercise-database.p.rapidapi.com",
-            "x-rapidapi-key: YOUR_API_KEY" // Replace with your RapidAPI key
+            "x-rapidapi-key: 0dc9a40520msh29cc6a8818639dep1e901bjsnfde0aed11246" 
         ],
     ]);
 
