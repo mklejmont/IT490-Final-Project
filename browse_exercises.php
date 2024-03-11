@@ -68,6 +68,7 @@ foreach ($exercises as $exercise) {
     <link rel="stylesheet" href="styles.css"> 
 </head>
 <body>
+    <?php include 'navigation.php'; ?>
     <h1>Browse Exercises</h1>
 
     <!-- Display filtered exercises -->
