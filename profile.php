@@ -30,6 +30,7 @@ if (!$user) {
     <title>User Profile</title>
 </head>
 <body>
+    <?php include 'navigation.php'; ?>
     <h1>User Profile</h1>
     <p><strong>Username:</strong> <?php echo $user["username"]; ?></p>
     <p><strong>Email:</strong> <?php echo $user["email"]; ?></p>
