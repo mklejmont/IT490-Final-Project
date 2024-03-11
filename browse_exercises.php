@@ -74,7 +74,23 @@ foreach ($exercises as $exercise) {
     <?php foreach ($filteredExercises as $exercise): ?>
         <div class="exercise">
             <h2><?php echo $exercise['name']; ?></h2>
-            <p><strong>Target Area:</strong> <?php echo $exercise['target_area']; ?></p>
+            <form method="get">
+            <label for="target_area">Select Target Area:</label>
+            <select name="target_area" id="target_area">
+            <option value="All">All</option>
+            <option value="back">Back</option>
+            <option value="cardio">Cardio</option>
+            <option value="chest">Chest</option>
+            <option value="lower arms">Lower Arms</option>
+            <option value="lower legs">Lower Legs</option>
+            <option value="neck">Neck</option>
+            <option value="shoulders">Shoulders</option>
+            <option value="upper arms">Upper Arms</option>
+            <option value="upper legs">Upper Legs</option>
+            <option value="waist">Waist</option>
+        </select>
+    <button type="submit">Filter</button>
+</form>
             <p><strong>Equipment:</strong> <?php echo implode(', ', $exerciseEquipment); ?></p>
             <!-- Display other exercise details as needed -->
         </div>
