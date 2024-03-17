@@ -10,7 +10,7 @@ if (!isset($_SESSION["loggedIn"])) {
 $user = $_SESSION["user"];
 
 // Fetch user's profile data from the database
-$userProfile = executeSQL("SELECT * FROM `accounts` WHERE username = '{$user}'");
+$userProfile = executeSQL("SELECT * FROM `accounts` WHERE username = '{$user}'")[0];
 
 // Check if the user profile exists
 if (!$userProfile) {
@@ -23,9 +23,9 @@ if (!$userProfile) {
 $userGoal = $userProfile['exercise_goals'];
 
 // Function to fetch exercise data from ExerciseDB API
-function fetchExercisesFromAPI($endpoint) {
+function fetchExercisesFromAPI($endpoint, $limit=10, $page=0) {
     $curl = curl_init();
-    $url = "https://exercisedb.p.rapidapi.com" . $endpoint;
+    $url = "https://exercisedb.p.rapidapi.com" . $endpoint . "?limit=".$limit."&offset=".($page*$limit);
 
     curl_setopt_array($curl, [
         CURLOPT_URL => $url,
@@ -53,47 +53,83 @@ function fetchExercisesFromAPI($endpoint) {
     return $exercises;
 }
 
+function filterForLowRatings($exercises){
+    global $user; 
+
+    $ratings = executeSQL("SELECT `exercise`, `rating` from `user_ratings` WHERE `user` = '{$user}' ORDER BY `rating`"); 
+    //var_dump($ratings); 
+    //echo "<br>"; 
+    //var_dump($exercises); 
+    $assoc = []; 
+    foreach($ratings as $val){
+            $assoc[$val['exercise']]=$val['rating']; 
+    }
+    $ratings = $assoc; 
+    //var_dump($ratings); 
+    $results = []; 
+    $ctr = 0;
+    foreach($exercises as $exe){
+        //echo "'".$exe['name']."' ".(key_exists($exe['name'], $ratings)? 'true':'false')."<br>";
+        if(!key_exists($exe['name'], $ratings) || $ratings[$exe['name']] >= 5){
+            $results[$ctr]=$exe; 
+            $ctr++; 
+        }
+    }
+    return $results; 
+}
+
 // Function to generate workout routine based on user goal
 function generateWorkoutRoutine($userGoal) {
 
     switch ($userGoal) {
         case 'Lose Weight':
-            $cardioExercises = fetchExercisesFromAPI('/exercises/bodyPart/cardio');
-            $strengthExercises = fetchExercisesFromAPI('/exercises');
+            $cardioExercises = filterForLowRatings(fetchExercisesFromAPI('/exercises/bodyPart/cardio'));
+            $cardioExercises2 = filterForLowRatings(fetchExercisesFromAPI('/exercises/bodyPart/cardio', 10, 1));
+            $strengthExercises = filterForLowRatings(fetchExercisesFromAPI('/exercises'));
+            $strengthExercises2 = filterForLowRatings(fetchExercisesFromAPI('/exercises', 10, 1));
 
             // Filter out cardio and stretch exercises
             $filteredExercises = array_filter($strengthExercises, function($exercise) {
                return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
             });
+            $filteredExercises2 = array_filter($strengthExercises2, function($exercise) {
+                return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
+             });
 
             return [
-                'Cardio workouts' => $cardioExercises,
-                'Strength training workouts' => $filteredExercises
+                'Cardio workouts' => array_slice(array_merge($cardioExercises, $cardioExercises2), 0, 10),
+                'Strength training workouts' => array_slice(array_merge($filteredExercises, $filteredExercises2), 0, 10)
             ];
-            break;
 
         case 'Build Muscle':
-            $strengthExercises = fetchExercisesFromAPI('/exercises');
-
+            $strengthExercises = filterForLowRatings(fetchExercisesFromAPI('/exercises'));
+            $strengthExercises2 = filterForLowRatings(fetchExercisesFromAPI('/exercises'));
             // Filter out cardio and stretch exercises
             $filteredExercises = array_filter($strengthExercises, function($exercise) {
                 return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
             });
-
-            return [
-                'Strength training workouts' => $filteredExercises
-            ];
-            break;
-
-        case 'Improve Mobility':
-            $cardioExercises = fetchExercisesFromAPI('/exercises/bodyPart/cardio');
-            $strengthExercises = fetchExercisesFromAPI('/exercises');
-            $randomStretchExercises = fetchExercisesFromAPI('/exercises/name/stretch');
-
-            // Filter out cardio and stretch exercises from strength exercises
-            $filteredStrengthExercises = array_filter($strengthExercises, function($exercise) {
+            $filteredExercises2 = array_filter($strengthExercises2, function($exercise) {
                 return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
             });
+
+            return [
+                'Strength training workouts' => array_slice(array_merge($filteredExercises, $filteredExercises2), 0, 10)
+            ];
+
+        case 'Improve Mobility':
+            $cardioExercises = filterForLowRatings(fetchExercisesFromAPI('/exercises/bodyPart/cardio'));
+            $cardioExercises2 = filterForLowRatings(fetchExercisesFromAPI('/exercises/bodyPart/cardio', 10, 1));
+            $strengthExercises = filterForLowRatings(fetchExercisesFromAPI('/exercises'));
+            $strengthExercises2 = filterForLowRatings(fetchExercisesFromAPI('/exercises'));
+            // Filter out cardio and stretch exercises
+            $filteredExercises = array_filter($strengthExercises, function($exercise) {
+                return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
+            });
+            $filteredExercises2 = array_filter($strengthExercises2, function($exercise) {
+                return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
+            });
+
+            $randomStretchExercises = filterForLowRatings(fetchExercisesFromAPI('/exercises/name/stretch'));
 
             // Shuffle the array to get random exercises
             shuffle($randomStretchExercises);
@@ -102,11 +138,10 @@ function generateWorkoutRoutine($userGoal) {
             $randomStretchExercises = array_slice($randomStretchExercises, 0, min(3, count($randomStretchExercises)));
 
             return [
-                'Cardio workouts' => $cardioExercises,
-                'Strength training workouts' => $filteredStrengthExercises,
+                'Cardio workouts' => array_slice(array_merge($cardioExercises, $cardioExercises2), 0, 10),
+                'Strength training workouts' => array_slice(array_merge($filteredExercises, $filteredExercises2), 0, 10),
                 'Random 15-minute stretch' => $randomStretchExercises
             ];
-            break;
 
         default:
             return "No specific workout routine recommended.";

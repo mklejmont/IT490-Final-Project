@@ -9,7 +9,7 @@ if (!isset($_SESSION["loggedIn"]) || $_SESSION["loggedIn"] !== true) {
 // Retrieve user's profile information from the database
 $user_id = $_SESSION["user"]; // Assuming you have stored user's ID in the session
 $query = "SELECT * FROM `accounts` WHERE username = '{$user_id}'";
-$user = executeSQL($query);
+$user = executeSQL($query)[0];
 
 // Check if user exists
 if (!$user) {
