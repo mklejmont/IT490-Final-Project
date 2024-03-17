@@ -5,7 +5,7 @@ if (!isset($_SESSION["loggedIn"]) || $_SESSION["loggedIn"] !== true) {
     header("Location: login.php");
     exit;
 }
-$column_names=['height_feet', 'height_inches', 'weight', 'time_available', 'gym_access', 'exercise_goals'];
+$column_names=['height_feet', 'height_inches', 'weight', 'time_available', 'equipment','gym_access', 'exercise_goals'];
 // Initialize session variables if they don't exist yet
 // foreach($column_names as $col){
 //     if (!isset($_SESSION[$col])) {
@@ -24,6 +24,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $valstr['height'].=".".$_POST[$col]; 
             else if($col == 'gym_access')
                 $valstr[$col].=($_POST[$col] == 'yes' ? 0 : 1); 
+            else if($col == 'equipment')
+                $valstr[$col]=implode(", ", str_replace('_', ' ',$_POST[$col]));  
             else
             $valstr[$col]=$_POST[$col]; 
         }

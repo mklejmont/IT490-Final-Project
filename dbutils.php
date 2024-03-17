@@ -24,8 +24,8 @@ function executeSQL($SQL){
 	$request["type"] = "sql"; 
 	$request["sql"] = $SQL; 
 	$resp = $client->send_request($request);
-	var_dump($resp); 
-	return $resp[0]; 
+	//var_dump($resp); 
+	return $resp; 
 }
 
 //var_dump(executeSQL("SELECT * FROM `accounts`")); 

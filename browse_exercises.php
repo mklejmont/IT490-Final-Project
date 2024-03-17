@@ -13,41 +13,50 @@ if (!isset($_SESSION["loggedIn"])) {
     exit;
 }
 
-$user = $_SESSION["user"];
-
 // Fetch user's profile data from the database
-$userProfile = executeSQL("SELECT * FROM user_profiles WHERE username = '{$user}'");
+$userProfile = executeSQL("SELECT * FROM `accounts` WHERE username = '{$_SESSION['user']}'")[0];
 
 // Extract equipment preferences from the user's profile
-$equipmentPreferences = explode(',', $userProfile['equipment']);
-
+$equipmentPreferences = explode(', ', $userProfile['equipment']);
 // Step 2: Fetch exercise data from the API (ExerciseDB)
-$curl = curl_init();
+// Function to fetch exercise data from ExerciseDB API
+function fetchExercisesFromAPI($endpoint, $limit=10, $page=0) {
+    $curl = curl_init();
+    $url = "https://exercisedb.p.rapidapi.com" . $endpoint . "?limit=".$limit."&offset=".($page*$limit);
 
-curl_setopt_array($curl, [
-    CURLOPT_URL => "https://exercise-database.p.rapidapi.com/exercises",
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_FOLLOWLOCATION => true,
-    CURLOPT_ENCODING => "",
-    CURLOPT_MAXREDIRS => 10,
-    CURLOPT_TIMEOUT => 30,
-    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-    CURLOPT_CUSTOMREQUEST => "GET",
-    CURLOPT_HTTPHEADER => [
-        "x-rapidapi-host: exercisedb.p.rapidapi.com",
-        "x-rapidapi-key: 0dc9a40520msh29cc6a8818639dep1e901bjsnfde0aed11246" 
-    ],
-]);
+    curl_setopt_array($curl, [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => "",
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 30,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => "GET",
+        CURLOPT_HTTPHEADER => [
+            "X-RapidAPI-Host: exercisedb.p.rapidapi.com",
+            "X-RapidAPI-Key: 9cee9e5e31msh3adeb58829c1438p1f5c85jsnc0841e11de12"
+        ],
+    ]);
 
-$response = curl_exec($curl);
-$exercises = json_decode($response, true);
+    $response = curl_exec($curl);
+    $exercises = json_decode($response, true);
+    $err = curl_error($curl); 
 
-curl_close($curl);
+    if ($err) {
+        echo "cURL Error #:" . $err;
+    }
 
+    curl_close($curl);
+    return $exercises;
+}
 // Step 3: Implement filtering functionality
 $filteredExercises = [];
-
+$page = 0;
+//while(count($filteredExercises) < 5){
+$exercises = fetchExercisesFromAPI('/exercises', 10,$page); 
 foreach ($exercises as $exercise) {
+    var_dump($exercise); 
+    echo "<br>";
     // Check if the exercise matches the user's equipment preferences
     $exerciseEquipment = explode(',', $exercise['equipment']); 
     $equipmentMatch = array_intersect($equipmentPreferences, $exerciseEquipment);
@@ -57,6 +66,8 @@ foreach ($exercises as $exercise) {
         $filteredExercises[] = $exercise;
     }
 }
+$page++; 
+//}
 ?>
 
 <!DOCTYPE html>
