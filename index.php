@@ -7,6 +7,7 @@
     <title>Document</title>
 </head>
 <body>
+    <?php include('navigation.php'); ?>
     <?php if(!$_SESSION['loggedIn']){?>
         <a href="login.php">login</a>
     <?php } else {?>

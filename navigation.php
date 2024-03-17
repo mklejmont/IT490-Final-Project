@@ -7,7 +7,7 @@
 
 
 <nav>
-    <a href="goal_recommender.php">Goal Recommender</a>
+    <a href="goal_reccomender.php">Goal Recommender</a>
     <a href="browse_exercises.php">Browse Exercises</a>
     <a href="find_gym.html">Find Gym</a>
     <a href="profile.php">Profile</a>

@@ -72,11 +72,12 @@ class rabbitMQServer
       $exchange->setType($this->exchange_type);
 
 			$conn_queue = new AMQPQueue($channel);
+			$conn_queue->setFlags(AMQP_NOPARAM); 
 			$conn_queue->setName($msg->getReplyTo());
 			$replykey = $this->routing_key.".response";
 			$conn_queue->bind($exchange->getName(),$replykey);
 			$exchange->publish(json_encode($response),$replykey,AMQP_NOPARAM,array('correlation_id'=>$msg->getCorrelationId()));
-
+			 
 				return;
 			}
 		}
@@ -116,6 +117,7 @@ class rabbitMQServer
       $exchange->setType($this->exchange_type);
 
 			$this->conn_queue = new AMQPQueue($channel);
+			$this->conn_queue->setFlags(AMQP_NOPARAM); 
 			$this->conn_queue->setName($this->queue);
 			$this->conn_queue->bind($exchange->getName(),$this->routing_key);
 
@@ -211,17 +213,20 @@ class rabbitMQClient
       $exchange->setType($this->exchange_type);
 
       $callback_queue = new AMQPQueue($channel);
+	  $callback_queue->setFlags(AMQP_NOPARAM); 
       $callback_queue->setName($this->queue."_response");
       $callback_queue->declare();
 			$callback_queue->bind($exchange->getName(),$this->routing_key.".response");
 
 			$this->conn_queue = new AMQPQueue($channel);
+			$this->conn_queue->setFlags(AMQP_NOPARAM); 
 			$this->conn_queue->setName($this->queue);
 			$this->conn_queue->bind($exchange->getName(),$this->routing_key);
 
 			$exchange->publish($json_message,$this->routing_key,AMQP_NOPARAM,array('reply_to'=>$callback_queue->getName(),'correlation_id'=>$uid));
       $this->response_queue[$uid] = "waiting";
 			$callback_queue->consume(array($this,'process_response'));
+			$callback_queue->ack(0);
 
 			$response = $this->response_queue[$uid];
 			unset($this->response_queue[$uid]);
@@ -258,6 +263,7 @@ class rabbitMQClient
       $exchange->setName($this->exchange);
       $exchange->setType($this->exchange_type);
 			$this->conn_queue = new AMQPQueue($channel);
+			$this->conn_queue->setFlags(AMQP_NOPARAM); 
 			$this->conn_queue->setName($this->queue);
 			$this->conn_queue->bind($exchange->getName(),$this->routing_key);
 			return $exchange->publish($json_message,$this->routing_key);
@@ -269,4 +275,3 @@ class rabbitMQClient
 	}
 }
 ?>
-

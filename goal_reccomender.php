@@ -1,5 +1,4 @@
 <?php
-session_start();
 include_once("dbutils.php");
 
 // Check if the user is logged in
@@ -11,11 +10,7 @@ if (!isset($_SESSION["loggedIn"])) {
 $user = $_SESSION["user"];
 
 // Fetch user's profile data from the database
-$sql = "SELECT * FROM user_profiles WHERE username = :username";
-$stmt = $db->prepare($sql);
-$stmt->bindValue(":username", $user);
-$stmt->execute();
-$userProfile = $stmt->fetch(PDO::FETCH_ASSOC);
+$userProfile = executeSQL("SELECT * FROM `accounts` WHERE username = '{$user}'");
 
 // Check if the user profile exists
 if (!$userProfile) {
@@ -30,34 +25,37 @@ $userGoal = $userProfile['exercise_goals'];
 // Function to fetch exercise data from ExerciseDB API
 function fetchExercisesFromAPI($endpoint) {
     $curl = curl_init();
-
-    $url = "https://exercise-database.p.rapidapi.com" . $endpoint;
+    $url = "https://exercisedb.p.rapidapi.com" . $endpoint;
 
     curl_setopt_array($curl, [
         CURLOPT_URL => $url,
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_ENCODING => "",
         CURLOPT_MAXREDIRS => 10,
         CURLOPT_TIMEOUT => 30,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => "GET",
         CURLOPT_HTTPHEADER => [
-            "x-rapidapi-host: exercise-database.p.rapidapi.com",
-            "x-rapidapi-key: 0dc9a40520msh29cc6a8818639dep1e901bjsnfde0aed11246" 
+            "X-RapidAPI-Host: exercisedb.p.rapidapi.com",
+            "X-RapidAPI-Key: 9cee9e5e31msh3adeb58829c1438p1f5c85jsnc0841e11de12"
         ],
     ]);
 
     $response = curl_exec($curl);
     $exercises = json_decode($response, true);
+    $err = curl_error($curl); 
+
+    if ($err) {
+        echo "cURL Error #:" . $err;
+    }
 
     curl_close($curl);
-
     return $exercises;
 }
 
 // Function to generate workout routine based on user goal
 function generateWorkoutRoutine($userGoal) {
+
     switch ($userGoal) {
         case 'Lose Weight':
             $cardioExercises = fetchExercisesFromAPI('/exercises/bodyPart/cardio');
@@ -65,7 +63,7 @@ function generateWorkoutRoutine($userGoal) {
 
             // Filter out cardio and stretch exercises
             $filteredExercises = array_filter($strengthExercises, function($exercise) {
-                return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
+               return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
             });
 
             return [
@@ -114,9 +112,6 @@ function generateWorkoutRoutine($userGoal) {
             return "No specific workout routine recommended.";
     }
 }
-
-// Generate workout routine based on user's goal
-$workoutRoutine = generateWorkoutRoutine($userGoal);
 ?>
 
 <!DOCTYPE html>
@@ -127,12 +122,14 @@ $workoutRoutine = generateWorkoutRoutine($userGoal);
     <title>Recommended Workout Routine</title>
 </head>
 <body>
-    <?php include 'navigation.php'; ?>
+    <?php include('navigation.php'); ?>
     <h1>Recommended Workout Routine</h1>
     <p><strong>Goal:</strong> <?php echo $userGoal; ?></p>
     <p><strong>Recommended Routine:</strong></p>
     <ul>
-    <?php foreach ($workoutRoutine as $category => $exercises): ?>
+    <?php 
+    $workoutRoutine = generateWorkoutRoutine($userGoal);    
+    foreach ($workoutRoutine as $category => $exercises): ?>
         <li><strong><?php echo $category; ?>:</strong></li>
         <ul>
             <?php foreach ($exercises as $exercise): ?>

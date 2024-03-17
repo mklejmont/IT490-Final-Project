@@ -27,11 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Save data to the database if both email and phone number are valid
-    $sql = "INSERT INTO push_notifications (email, phone) VALUES (:email, :phone)";
-    $stmt = $db->prepare($sql);
-    $stmt->bindValue(":email", $email);
-    $stmt->bindValue(":phone", $phone);
-    $stmt->execute();
+    $sql = executeSQL("INSERT INTO push_notifications (email, phone) VALUES ('{$email}', '{$phone}')");
 
     // Redirect to confirmation page
     header("Location: confirmation_page.php");

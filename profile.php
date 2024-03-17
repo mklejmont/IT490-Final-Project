@@ -1,21 +1,15 @@
 <?php
-session_start();
-
+include_once("dbutils.php");
 // Check if user is logged in
 if (!isset($_SESSION["loggedIn"]) || $_SESSION["loggedIn"] !== true) {
     header("Location: login.php");
     exit;
 }
 
-// Include database connection
-include_once("dbutils.php");
-
 // Retrieve user's profile information from the database
-$user_id = $_SESSION["user_id"]; // Assuming you have stored user's ID in the session
-$query = "SELECT * FROM users WHERE id = ?";
-$stmt = $pdo->prepare($query);
-$stmt->execute([$user_id]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+$user_id = $_SESSION["user"]; // Assuming you have stored user's ID in the session
+$query = "SELECT * FROM `accounts` WHERE username = '{$user_id}'";
+$user = executeSQL($query);
 
 // Check if user exists
 if (!$user) {
