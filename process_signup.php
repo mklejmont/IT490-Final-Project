@@ -1,7 +1,8 @@
 <?php
 // Database connection and initialization
-session_start();
 include_once("dbutils.php");
+error_reporting(E_ALL); 
+ini_set('display_errors', '1');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Validate email and phone number using regular expressions
@@ -28,8 +29,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Save data to the database if both email and phone number are valid
     $sql = executeSQL("INSERT INTO push_notifications (email, phone) VALUES ('{$email}', '{$phone}')");
+    //f7ad09394c63f290954a6956c6b96f98-b02bcf9f-d4c89daf
+    $curl = curl_init();
+    $url = "https://api.mailgun.net/v3/sandboxd748455b78024d19844e8a74ba2076e5.mailgun.org/messages";
 
-    // Redirect to confirmation page
+    curl_setopt_array($curl, [
+        CURLOPT_URL => $url,
+        CURLOPT_ENCODING => "",
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 30,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => "POST",
+        CURLOPT_POST => true, 
+        CURLOPT_POSTFIELDS => array(
+            'from'=>'postmaster@jimbotron.jim', 
+            'to'=>$email,
+            'subject'=>'Thank you for signing up!',
+            'text'=>'We will email you with reminders to exercise daily!'
+        ),
+        CURLOPT_USERPWD => "api:f7ad09394c63f290954a6956c6b96f98-b02bcf9f-d4c89daf"
+    ]);
+
+    $response = curl_exec($curl);
+    $exercises = json_decode($response, true);
+    $err = curl_error($curl);
+
+    if ($err) {
+        echo "cURL Error #:" . $err;
+    }
+    curl_close($curl);
     header("Location: confirmation_page.php");
     exit;
 }
