@@ -116,7 +116,7 @@ function generateWorkoutRoutine($userGoal) {
                 'Strength training workouts' => array_slice(array_merge($filteredExercises, $filteredExercises2), 0, 10)
             ];
 
-        case 'Improve Mobility':
+        case 'Increase Flexibility':
             $cardioExercises = filterForLowRatings(fetchExercisesFromAPI('/exercises/bodyPart/cardio'));
             $cardioExercises2 = filterForLowRatings(fetchExercisesFromAPI('/exercises/bodyPart/cardio', 10, 1));
             $strengthExercises = filterForLowRatings(fetchExercisesFromAPI('/exercises'));
@@ -130,7 +130,8 @@ function generateWorkoutRoutine($userGoal) {
             });
 
             $randomStretchExercises = filterForLowRatings(fetchExercisesFromAPI('/exercises/name/stretch'));
-
+            $randomStretchExercises2 = filterForLowRatings(fetchExercisesFromAPI('/exercises/name/stretch', 10, 1));
+            $randomStretchExercises = array_merge($randomStretchExercises, $randomStretchExercises2);
             // Shuffle the array to get random exercises
             shuffle($randomStretchExercises);
 

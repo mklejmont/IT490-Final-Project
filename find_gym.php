@@ -135,7 +135,7 @@
             else echo "this gym is currently closed";  ?><br>
             <?php echo $gym['vicinity'];?>
         </p>
-        <?php var_dump($gym); ?>
+        <?php //var_dump($gym); ?>
     <?php } ?>
 </body>
 
