@@ -18,8 +18,12 @@ $userProfile = executeSQL("SELECT * FROM `accounts` WHERE username = '{$_SESSION
 
 // Extract equipment preferences from the user's profile
 $equipmentPreferences = explode(', ', $userProfile['equipment']);
+foreach($equipmentPreferences as $key => $equip){
+    $equipmentPreferences[$key] = str_replace(' ', '_', $equip); 
+}
 // Step 2: Fetch exercise data from the API (ExerciseDB)
 // Function to fetch exercise data from ExerciseDB API
+
 function fetchExercisesFromAPI($endpoint, $limit = 10, $page = 0)
 {
     $curl = curl_init();
@@ -56,7 +60,7 @@ function fetchExercisesFromAPI($endpoint, $limit = 10, $page = 0)
 }
 // Step 3: Implement filtering functionality
 $filteredExercises = [];
-if (!key_exists('target_area', $_GET) || $_GET['target_area'] == '') {
+if ((!key_exists('target_area', $_GET) || $_GET['target_area'] == '') && count($equipmentPreferences) > 0) {
     foreach ($equipmentPreferences as $equip) {
         //echo '/exercises/equipment/'.$equip; 
         $filteredExercises = array_merge($filteredExercises, fetchExercisesFromAPI('/exercises/equipment/' . $equip, 10));
@@ -66,7 +70,10 @@ if (!key_exists('target_area', $_GET) || $_GET['target_area'] == '') {
     $filteredExercises = fetchExercisesFromAPI('/exercises/bodyPart/' . $_GET['target_area'], 10);
 }else if(key_exists('target_equip', $_GET)){
     $filteredExercises = fetchExercisesFromAPI('/exercises/equipment/' . $_GET['target_equip'], 10);
+}else{
+    $filteredExercises = fetchExercisesFromAPI("/exercises"); 
 }
+
 //var_dump($filteredExercises); 
 ?>
 
@@ -122,7 +129,8 @@ if (!key_exists('target_area', $_GET) || $_GET['target_area'] == '') {
             <button type="submit">Filter</button>
         </form>
         <?php 
-            if(count($filteredExercises) == 0) echo "Please update your profile with available equipment to get started... Or search by bodypart/equipment here!"; 
+            if(count($filteredExercises) == 0) echo "Please update your profile with available equipment to get started... Or search by body part/equipment here!"; 
+            else
             foreach ($filteredExercises as $exercise) : ?>
             <h2 style="text-align:center;"><?php echo $exercise['name']; ?></h2>
             <p style="text-align:center;"><?php foreach ($exercise['instructions'] as $x) {
