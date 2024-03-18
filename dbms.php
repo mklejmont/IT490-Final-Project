@@ -20,6 +20,7 @@ function doSQL($sql){
 	$userval = $db->prepare($sql); 
 	$userval->execute();
 	$userval = $userval->fetchAll();
+	echo "User data:"; 
 	var_dump($userval); 
 	return $userval;
 	} catch(Exception $e){
@@ -63,7 +64,7 @@ function requestProcessor($request)
     case "login":
       return doLogin($request['username'],$request['password']);
     case "sql":
-      return doSQL($request['sql']); 
+        return doSQL($request['sql']); 
     case "validate_session":
       //return doValidate($request['sessionId']);
       default:

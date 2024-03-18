@@ -1,10 +1,16 @@
 <?php 
 require_once('rabbitMQLib.inc');
-$client = new rabbitMQClient("testRabbitMQ.ini","testServer"); 
+
+
+
+function sanitize(string $str)
+{
+	$str = strip_tags(filter_var(trim($str)));
+	return $str;
+}
 
 function doLogin($username, $passwordHash){
-	global $client; 
-	$request = array(); 
+	$client = new rabbitMQClient("testRabbitMQ.ini","testServer"); 	$request = array(); 
 	$request['type'] = "login";
 	$request['username'] = $username;
 	$request['password'] = $passwordHash; 
@@ -13,11 +19,12 @@ function doLogin($username, $passwordHash){
 }
 
 function executeSQL($SQL){
-	global $client; 
+	$client = new rabbitMQClient("testRabbitMQ.ini","testServer"); 
 	$request = array(); 
 	$request["type"] = "sql"; 
 	$request["sql"] = $SQL; 
 	$resp = $client->send_request($request);
+	//var_dump($resp); 
 	return $resp; 
 }
 

@@ -1,3 +1,4 @@
+<?php include_once('dbutils.php'); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +7,13 @@
     <title>Document</title>
 </head>
 <body>
-    <a href="login.php">login</a>
+    <?php include('navigation.php'); ?>
+    <?php if(!$_SESSION['loggedIn']){?>
+        <a href="login.php">login</a>
+    <?php } else {?>
+        <form>
+        <button name="logout" value="logout">logout</button>
+        </form>
+    <?php }?>
 </body>
 </html>
