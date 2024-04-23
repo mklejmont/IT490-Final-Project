@@ -83,6 +83,7 @@ rollback_to_working_version() {
     local SOURCE_IP="10.0.2.15"  
     local SOURCE_DIR="/var/www/IT490_Fitness_App/deployment"  
 
+
     # Prompt user for QA machine IP address and SSH username
     read -p "Enter QA machine IP address: " QA_IP
     read -p "Enter SSH username: " SSH_USER
@@ -100,7 +101,11 @@ rollback_to_working_version() {
 
     # SSH into QA machine and rollback
     ssh -i "$SSH_KEY" "$SSH_USER@$QA_IP" "sudo rm -rf /var/www/IT490_Fitness_App/* && unzip -o /tmp/$LAST_GOOD_VERSION -d /tmp && sudo mv -f /tmp/var/www/IT490_Fitness_App/* /var/www/IT490_Fitness_App"
+
+    # Rollback on the source machine
+    ssh -i "$SSH_KEY" "$SSH_USER@$SOURCE_IP" "unzip -o $SOURCE_DIR/$LAST_GOOD_VERSION -d $SOURCE_DIR && sudo mv -f $SOURCE_DIR/* /var/www/IT490_Fitness_App"
 }
+
 
 
 
