@@ -2,6 +2,7 @@
 include_once("dbutils.php");
 
 // Check if the user is logged in
+session_start();
 if (!isset($_SESSION["loggedIn"])) {
     header("Location: login.php");
     exit;
@@ -23,9 +24,10 @@ if (!$userProfile) {
 $userGoal = $userProfile['exercise_goals'];
 
 // Function to fetch exercise data from ExerciseDB API
-function fetchExercisesFromAPI($endpoint, $limit=10, $page=0) {
+function fetchExercisesFromAPI($endpoint, $limit = 10, $page = 0)
+{
     $curl = curl_init();
-    $url = "https://exercisedb.p.rapidapi.com" . $endpoint . "?limit=".$limit."&offset=".($page*$limit);
+    $url = "https://exercisedb.p.rapidapi.com" . $endpoint . "?limit=" . $limit . "&offset=" . ($page * $limit);
 
     curl_setopt_array($curl, [
         CURLOPT_URL => $url,
@@ -43,7 +45,7 @@ function fetchExercisesFromAPI($endpoint, $limit=10, $page=0) {
 
     $response = curl_exec($curl);
     $exercises = json_decode($response, true);
-    $err = curl_error($curl); 
+    $err = curl_error($curl);
 
     if ($err) {
         echo "cURL Error #:" . $err;
@@ -53,34 +55,30 @@ function fetchExercisesFromAPI($endpoint, $limit=10, $page=0) {
     return $exercises;
 }
 
-function filterForLowRatings($exercises){
-    global $user; 
+function filterForLowRatings($exercises)
+{
+    global $user;
 
-    $ratings = executeSQL("SELECT `exercise`, `rating` from `user_ratings` WHERE `user` = '{$user}' ORDER BY `rating`"); 
-    //var_dump($ratings); 
-    //echo "<br>"; 
-    //var_dump($exercises); 
-    $assoc = []; 
-    foreach($ratings as $val){
-            $assoc[$val['exercise']]=$val['rating']; 
+    $ratings = executeSQL("SELECT `exercise`, `rating` from `user_ratings` WHERE `user` = '{$user}' ORDER BY `rating`");
+    $assoc = [];
+    foreach ($ratings as $val) {
+        $assoc[$val['exercise']] = $val['rating'];
     }
-    $ratings = $assoc; 
-    //var_dump($ratings); 
-    $results = []; 
+    $ratings = $assoc;
+    $results = [];
     $ctr = 0;
-    foreach($exercises as $exe){
-        //echo "'".$exe['name']."' ".(key_exists($exe['name'], $ratings)? 'true':'false')."<br>";
-        if(!key_exists($exe['name'], $ratings) || $ratings[$exe['name']] >= 5){
-            $results[$ctr]=$exe; 
-            $ctr++; 
+    foreach ($exercises as $exe) {
+        if (!key_exists($exe['name'], $ratings) || $ratings[$exe['name']] >= 5) {
+            $results[$ctr] = $exe;
+            $ctr++;
         }
     }
-    return $results; 
+    return $results;
 }
 
 // Function to generate workout routine based on user goal
-function generateWorkoutRoutine($userGoal) {
-
+function generateWorkoutRoutine($userGoal)
+{
     switch ($userGoal) {
         case 'Lose Weight':
             $cardioExercises = filterForLowRatings(fetchExercisesFromAPI('/exercises/bodyPart/cardio'));
@@ -89,12 +87,12 @@ function generateWorkoutRoutine($userGoal) {
             $strengthExercises2 = filterForLowRatings(fetchExercisesFromAPI('/exercises', 10, 1));
 
             // Filter out cardio and stretch exercises
-            $filteredExercises = array_filter($strengthExercises, function($exercise) {
-               return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
-            });
-            $filteredExercises2 = array_filter($strengthExercises2, function($exercise) {
+            $filteredExercises = array_filter($strengthExercises, function ($exercise) {
                 return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
-             });
+            });
+            $filteredExercises2 = array_filter($strengthExercises2, function ($exercise) {
+                return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
+            });
 
             return [
                 'Cardio workouts' => array_slice(array_merge($cardioExercises, $cardioExercises2), 0, 10),
@@ -105,10 +103,10 @@ function generateWorkoutRoutine($userGoal) {
             $strengthExercises = filterForLowRatings(fetchExercisesFromAPI('/exercises'));
             $strengthExercises2 = filterForLowRatings(fetchExercisesFromAPI('/exercises'));
             // Filter out cardio and stretch exercises
-            $filteredExercises = array_filter($strengthExercises, function($exercise) {
+            $filteredExercises = array_filter($strengthExercises, function ($exercise) {
                 return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
             });
-            $filteredExercises2 = array_filter($strengthExercises2, function($exercise) {
+            $filteredExercises2 = array_filter($strengthExercises2, function ($exercise) {
                 return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
             });
 
@@ -122,10 +120,10 @@ function generateWorkoutRoutine($userGoal) {
             $strengthExercises = filterForLowRatings(fetchExercisesFromAPI('/exercises'));
             $strengthExercises2 = filterForLowRatings(fetchExercisesFromAPI('/exercises'));
             // Filter out cardio and stretch exercises
-            $filteredExercises = array_filter($strengthExercises, function($exercise) {
+            $filteredExercises = array_filter($strengthExercises, function ($exercise) {
                 return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
             });
-            $filteredExercises2 = array_filter($strengthExercises2, function($exercise) {
+            $filteredExercises2 = array_filter($strengthExercises2, function ($exercise) {
                 return stripos($exercise['name'], 'stretch') === false && $exercise['target'] !== 'cardio';
             });
 
@@ -148,6 +146,7 @@ function generateWorkoutRoutine($userGoal) {
             return "No specific workout routine recommended.";
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -163,16 +162,24 @@ function generateWorkoutRoutine($userGoal) {
     <p><strong>Goal:</strong> <?php echo $userGoal; ?></p>
     <p><strong>Recommended Routine:</strong></p>
     <ul>
-    <?php 
-    $workoutRoutine = generateWorkoutRoutine($userGoal);    
-    foreach ($workoutRoutine as $category => $exercises): ?>
-        <li><strong><?php echo $category; ?>:</strong></li>
-        <ul>
-            <?php foreach ($exercises as $exercise): ?>
-                <li><?php echo $exercise['name']; ?></li>
-            <?php endforeach; ?>
-        </ul>
-    <?php endforeach; ?>
+        <?php
+        $workoutRoutine = generateWorkoutRoutine($userGoal);
+        foreach ($workoutRoutine as $category => $exercises): ?>
+            <li><strong><?php echo $category; ?>:</strong></li>
+            <ul>
+                <?php foreach ($exercises as $exercise): ?>
+                    <li>
+                        <?php echo $exercise['name']; ?>
+                        <form method="post" action="add_to_calendar.php">
+                            <input type="hidden" name="exercise_name" value="<?php echo $exercise['name']; ?>">
+                            <label for="selected_date">Select Date:</label>
+                            <input type="date" id="selected_date" name="selected_date">
+                            <input type="submit" value="Add to Calendar">
+                        </form>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endforeach; ?>
     </ul>
 </body>
 </html>
