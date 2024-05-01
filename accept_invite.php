@@ -1,22 +1,30 @@
-<?php include 'navigation.php';
-// Include database connection
+<?php
 include_once("dbutils.php");
 
-// Check if the form has been submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Retrieve data from the invitation form
-    $date = $_POST['date'];
+// Check if the user is logged in
+session_start();
+if (!isset($_SESSION["loggedIn"])) {
+    // If not logged in, redirect to login page
+    header("Location: login.php");
+    exit;
+}
 
-    // Example: Add the workout event to the calendar
-    // You'll need to replace this with your actual database logic to insert the event
-    $sql = "INSERT INTO user_calendar (user, date, exercise_name) VALUES ('{$_SESSION['user']}', '$date', 'Workout with friend')";
-    if (executeSQL($sql)) {
-        // Event added successfully, redirect to calendar page
-        header("Location: calendar.php");
-        exit;
-    } else {
-        // Error handling if event insertion fails
-        echo "Error: Unable to add event to calendar. Please try again later.";
-    }
+// Retrieve the invite date from the URL parameters
+if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET["invite_date"])) {
+    $user = $_SESSION["user"];
+    $inviteDate = $_GET["invite_date"];
+    $exerciseName = "Workout with a Friend";
+
+    // Insert the workout event into the user's calendar
+    $insertQuery = "INSERT INTO user_calendar (user, date, exercise_name) VALUES ('$user', '$inviteDate', '$exerciseName')";
+    executeSQL($insertQuery);
+
+    // Redirect back to the calendar page
+    header("Location: calendar.php");
+    exit;
+} else {
+    // If invite date is not provided, redirect to home page or display an error message
+    header("Location: index.php");
+    exit;
 }
 ?>
