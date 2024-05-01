@@ -14,6 +14,6 @@
     <a href="signup_push_notifications.php">Sign Up for Push Notifications</a>
     <a href="calendar.php">Calendar</a>
     <a href="exercise_rater.php">Exercise Rater</a>
-    <a href="elogout.php">Logout</a>
+    <a href="logout.php">Logout</a>
 </nav>
 </html>
