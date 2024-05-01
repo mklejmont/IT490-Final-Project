@@ -1,4 +1,4 @@
-<?php
+<?php include 'navigation.php'
 // Include database connection
 include_once("dbutils.php");
 
