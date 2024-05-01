@@ -1,6 +1,14 @@
 <?php
 session_start();
 
+require 'vendor/autoload.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Check if the user is logged in
 if (!isset($_SESSION["loggedIn"]) || !$_SESSION["loggedIn"]) {
     // If not logged in, redirect to login page
@@ -13,10 +21,38 @@ function generateVerificationCode() {
     return str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
 }
 
-// Function to send SMS with verification code
+// Function to send SMS with verification code using Google SMTP
 function sendVerificationCode($phoneNumber, $code) {
-    // Implement your SMS sending logic here
-    // For example, you can use a third-party SMS service
+    require 'vendor/autoload.php';
+
+    // Initialize PHPMailer
+    $mail = new PHPMailer(true);
+
+    try {
+        // SMTP settings for Gmail
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'fitnessapp490@gmail.com'; // Your Gmail email address
+        $mail->Password = 'exgq gyqq fywc hsmn'; // Your Gmail password or App Password
+        $mail->SMTPSecure = 'tls';
+        $mail->Port = 587;
+
+        // Sender and recipient
+        $mail->setFrom('fitnessapp490@gmail.com', 'Authenticate');
+        $mail->addAddress($phoneNumber . '@vtext.com'); // 
+        
+        // Email content
+        $mail->isHTML(false);
+        $mail->Subject = 'Verification Code';
+        $mail->Body = 'Your verification code is: ' . $code;
+
+        // Send email
+        $mail->send();
+        return true; // Return true if email sent successfully
+    } catch (Exception $e) {
+        return false; // Return false if email sending fails
+    }
 }
 
 // Check if the phone number form is submitted
@@ -29,6 +65,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["phone_number"])) {
     $_SESSION["verificationCode"] = $verificationCode;
     // Store the phone number in the session
     $_SESSION["phoneNumber"] = $_POST["phone_number"];
+    // Redirect back to 2fa.php to display the verification form
+    header("Location: 2fa.php");
+    exit;
 }
 
 // Check if the verification code form is submitted
@@ -36,10 +75,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["verification_code"]))
     // Check if the entered code matches the stored verification code
     if ($_POST["verification_code"] === $_SESSION["verificationCode"]) {
         // Code matched, authentication successful
-        echo "Verification successful. You can proceed to the website.";
         // Clear session variables
         unset($_SESSION["verificationCode"]);
         unset($_SESSION["phoneNumber"]);
+        // Redirect to index.html
+        header("Location: index.php");
         exit;
     } else {
         // Code mismatch, display error
