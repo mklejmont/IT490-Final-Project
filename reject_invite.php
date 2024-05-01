@@ -6,6 +6,7 @@
     <title>Reject Invitation</title>
 </head>
 <body>
+    <?php include 'navigation.php'; ?>
     <h1>Invitation Rejected</h1>
     <p>Thank you for considering the invitation. You have chosen to reject it.</p>
 </body>
