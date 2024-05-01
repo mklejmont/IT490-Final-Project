@@ -1,4 +1,4 @@
-<?php
+<?php include 'navigation.php';
 // Include PHPMailer autoload file
 require 'vendor/autoload.php';
 
