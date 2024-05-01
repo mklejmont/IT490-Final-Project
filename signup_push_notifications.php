@@ -16,6 +16,8 @@
         <label for="phone">Phone Number:</label>
         <input type="tel" id="phone" name="phone" required>
         <br>
+        <br>
+        <br>              
         <input type="submit" value="Sign Up">
     </form>
 </body>
