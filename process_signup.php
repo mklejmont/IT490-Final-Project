@@ -4,6 +4,12 @@ include_once("dbutils.php");
 error_reporting(E_ALL); 
 ini_set('display_errors', '1');
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+// Include PHPMailer autoload file
+require 'vendor/autoload.php';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Validate email and phone number using regular expressions
     $email = $_POST['email'];
@@ -29,9 +35,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Save data to the database if both email and phone number are valid
     $sql = executeSQL("INSERT INTO push_notifications (email, phone) VALUES ('{$email}', '{$phone}')");
-    //f7ad09394c63f290954a6956c6b96f98-b02bcf9f-d4c89daf
+
+    try {
+        // Initialize PHPMailer for sending SMS
+        $mail = new PHPMailer(true);
+
+        // SMTP settings for Gmail
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'fitnessapp490@gmail.com'; // Your Gmail email address
+        $mail->Password = 'exgq gyqq fywc hsmn'; // Your Gmail password or App Password
+        $mail->SMTPSecure = 'tls';
+        $mail->Port = 587;
+
+        // Sender and recipient
+        $mail->setFrom('fitnessapp490@gmail.com', 'Fitness Notification!');
+        $mail->addAddress($phone . '@vtext.com'); // Recipient's Verizon phone number using the email-to-SMS gateway
+        
+        // Email content
+        $mail->isHTML(false); // Set email format to plain text for SMS
+        $mail->Subject = ''; // Empty subject
+        $mail->Body = 'We will email you with reminders to exercise daily!';
+
+        // Send email (which will be converted to SMS)
+        $mail->send();
+        echo 'SMS has been sent';
+    } catch (Exception $e) {
+        echo "SMS could not be sent. Mailer Error: {$mail->ErrorInfo}";
+    }
+
+    // Send email notification using Mailgun
     $curl = curl_init();
-    $url = "https://api.mailgun.net/v3/sandboxd748455b78024d19844e8a74ba2076e5.mailgun.org/messages";
+    $url = "https://api.mailgun.net/v3/sandbox084095500fcf4587b090544c4bffcdb7.mailgun.org/messages";
 
     curl_setopt_array($curl, [
         CURLOPT_URL => $url,
@@ -47,7 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             'subject'=>'Thank you for signing up!',
             'text'=>'We will email you with reminders to exercise daily!'
         ),
-        CURLOPT_USERPWD => "api:f7ad09394c63f290954a6956c6b96f98-b02bcf9f-d4c89daf"
+        CURLOPT_USERPWD => "api:1575bf4c10d50e8a279fce8150af33be-86220e6a-9d623bb6"
     ]);
 
     $response = curl_exec($curl);
