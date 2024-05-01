@@ -1,4 +1,5 @@
-<?php include 'navigation.php';
+<?php
+
 // Include PHPMailer autoload file
 require 'vendor/autoload.php';
 
@@ -27,9 +28,11 @@ function sendInvitationEmail($friendName, $friendEmail, $date) {
         // Email content
         $mail->isHTML(true);
         $mail->Subject = 'Invitation to Work Out Together';
+        // Include the invite date in the link
+        $acceptLink = "http://localhost/accept_invite.php?invite_date=$date";
         $mail->Body = "Hello $friendName!<br><br>Work out with me on $date!<br><br>
-                      <a href='https://www.example.com/accept-invite.php'>Accept and Add to Calendar</a><br>
-                      <a href='https://www.example.com/reject-invite.php'>Reject Invite</a>";
+                      <a href='$acceptLink'>Accept and Add to Calendar</a><br>
+                      <a href='http://localhost/reject_invite.php'>Reject Invite</a>";
 
         // Send email
         $mail->send();
@@ -50,3 +53,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     sendInvitationEmail($friendName, $friendEmail, $date);
 }
 ?>
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invite a Friend</title>
+</head>
+<body>
+    <?php include 'navigation.php'; ?>
+    <h1>Invite a Friend to Work Out</h1>
+    <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
+        <label for="friend_name">Friend's Name:</label>
+        <input type="text" id="friend_name" name="friend_name" required><br><br>
+        
+        <label for="friend_email">Friend's Email:</label>
+        <input type="email" id="friend_email" name="friend_email" required><br><br>
+        
+        <label for="date">Select Date:</label>
+        <input type="date" id="date" name="date" required><br><br>
+        
+        <input type="submit" value="Send Invitation">
+    </form>
+</body>
+</html>
